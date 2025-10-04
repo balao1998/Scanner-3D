@@ -1,15 +1,9 @@
-/*
- * Projeto inicial.c
- *
- * Created: 20/09/2025 16:32:42
- * Author : osval
- */ 
 
 #define F_CPU 16000000UL		// Clock de 16 MHz
 #include <avr/io.h>
 #include <avr/interrupt.h>
 volatile uint32_t contador_10ms = 0;
-volatile uint32_t contador_1s = 0;
+volatile uint32_t contador_1Hz = 0;
 
 
 void timer1ms(){
@@ -17,12 +11,12 @@ void timer1ms(){
 	TCCR2B = 0b00000101;		// PRESCALLER DE 128
 	OCR2A = 124;				//(16000000/128)=125KHz T=8us (1000/8)=125
 	TIMSK2 = 0b00000010;		//OCIE2A ATIVA INTERRUPT EM COMPARE MATCH
-	DDRB |= (1 << PB5);			//1Hz Led Pin
+	DDRB |= (1 << PB0);			//1Hz Led Pin
 }
 
 void adc_init(void) {
-	ADMUX = 0b00100000;			//	ADLAR A 1 AJUSTA A ESQUERDA
-	ADCSRA = 0b10000111;		//	ADEN A 1 ADC ENABLE, DIVISOR DE CLOCK 128 CONFIGURAÇAO DESTE ADC É MAIS ESTÁVEL ENTRE OS 50KHz E OS 200KHz
+	ADMUX = 0b01100000;			//	REFS0 a 1, referencia 5vdc interna ADLAR A 1 AJUSTA A ESQUERDA
+	ADCSRA = 0b10000111;		//	ADEN A 1 ADC ENABLE, DIVISOR DE CLOCK 128 CONFIGURAÃ‡AO DESTE ADC Ã‰ MAIS ESTÃVEL ENTRE OS 50KHz E OS 200KHz
 	
 }
 
@@ -41,9 +35,9 @@ uint8_t adc_read(void) {
 
 // FAST PWM A 976.56Hz
 void pwm_init(void) {
-	DDRB |= (1 << PB1);				// PB1 como saída
+	DDRB |= (1 << PB1);				// PB1 como saÃ­da
 
-	TCCR1A = 0b10000001;			// COM1A1 A 1 OC1A ON COMPARE MATCH NÃO INVERTIDO WGM10 A 1 PARA FAST PWM 8 BITS
+	TCCR1A = 0b10000001;			// COM1A1 A 1 OC1A ON COMPARE MATCH NÃƒO INVERTIDO WGM10 A 1 PARA FAST PWM 8 BITS
 	TCCR1B = 0b00001011;			//WGM12 A 1 PARA FAST PWM 8 BITS PRESCALLER 64
 }
 
@@ -61,13 +55,13 @@ int main(void) {
 	while (1) {
 		if (contador_10ms == 10){
 			contador_10ms = 0;
-			contador_1s++;
+			contador_1Hz++;
 			uint8_t valor = adc_read();
 			OCR1A = valor;
 		}
-		if (contador_1s ==50){
-			contador_1s=0;
-			PORTB ^= (1 << PB5);
+		if (contador_1Hz == 50){
+			contador_1Hz = 0;
+			PORTB ^= (1 << PB0);
 		}
 }
 }
