@@ -4,7 +4,7 @@
 #include "motor_control.h"
 #include "macros.h"
 
-void init_motors() {
+void motors_init() {
     //TODO (Balao) Configure ports for tower and base motors
 }
 

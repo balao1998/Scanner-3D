@@ -1,10 +1,13 @@
 
+#include "uart.h"
 #define F_CPU 16000000UL		// Clock de 16 MHz
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
 #include "motor_control.h"
 #include "macros.h"
+#include "adc.h"
+
 
 enum StateMachine {
 	STAND_BY,
@@ -13,13 +16,9 @@ enum StateMachine {
 };
 
 void init_timer_1ms(void);
-void adc_init(void);
+
 void pwm_init(void); // FAST PWM A 976.56Hz
 void init();
-
-
-// TODO (Balao) Move adc to its own file!
-uint8_t adc_read(void);
 
 //Function for main loop
 void loop(void);
@@ -45,7 +44,8 @@ void init() {
 	init_timer_1ms();
 	adc_init();
 	pwm_init();
-	init_motors();
+	motors_init();
+	uart_init();
 	sei();
 }
 
@@ -72,11 +72,7 @@ void init_timer_1ms(){
 	DDRB |= (1 << PB0);			//1Hz Led Pin
 }
 
-void adc_init(void) {
-	ADMUX = 0b01100000;			//	REFS0 a 1, referencia 5vdc interna ADLAR A 1 AJUSTA A ESQUERDA
-	ADCSRA = 0b10000111;		//	ADEN A 1 ADC ENABLE, DIVISOR DE CLOCK 128 CONFIGURAÇAO DESTE ADC É MAIS ESTÁVEL ENTRE OS 50KHz E OS 200KHz
-	
-}
+
 
 void pwm_init(void) {
 	DDRB |= (1 << PB1);				// PB1 como saída
@@ -85,16 +81,5 @@ void pwm_init(void) {
 	TCCR1B = 0b00001011;			//WGM12 A 1 PARA FAST PWM 8 BITS PRESCALLER 64
 }
 
-uint8_t adc_read(void) {
-	unsigned char i;
-	int res = 0;
-	
-	for (i=0; i<8; i++)
-	{
-		ADCSRA |= (1 << ADSC);
-		while (ADCSRA & (1 << ADSC));
-		res += ADCH;
-	}
-	return res/8;
-}
+
 

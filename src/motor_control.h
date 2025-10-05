@@ -14,7 +14,7 @@
 #define TOWER_MOTOR_DIR_PIN PB3
 
 
-void init_motors();
+void motors_init();
 void motor_step(uint8_t motor);
 void motor_steps(uint8_t motor, uint16_t n_steps);
 void motor_change_direction(uint8_t motor, uint8_t direction);
