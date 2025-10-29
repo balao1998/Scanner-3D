@@ -10,7 +10,7 @@ AVRDUDE = avrdude
 # Programmer (change as needed)
 PROGRAMMER = arduino
 BAUDRATE = 57600
-IP_ADRESS = 192.168.4.1:23
+IP_ADRESS = 10.225.134.252:23
 AVRDUDE_FLAGS = -c $(PROGRAMMER) -p $(MCU) -b $(BAUDRATE) -P net:$(IP_ADRESS)
 
 # Directories
@@ -29,6 +29,9 @@ CFLAGS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -Os -Wall -I$(SRC_DIR)
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC))
 
+#Linker flags for float support
+LDFLAGS = -Wl,-u,vfprintf -lprintf_flt
+
 # Default rule
 all: $(TARGET_HEX)
 
@@ -37,7 +40,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET_ELF): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 $(TARGET_HEX): $(TARGET_ELF)
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
