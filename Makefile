@@ -8,8 +8,10 @@ OBJCOPY = avr-objcopy
 AVRDUDE = avrdude
 
 # Programmer (change as needed)
-PROGRAMMER = usbasp
-AVRDUDE_FLAGS = -c $(PROGRAMMER) -p $(MCU)
+PROGRAMMER = arduino
+BAUDRATE = 57600
+IP_ADRESS = 192.168.4.1:23
+AVRDUDE_FLAGS = -c $(PROGRAMMER) -p $(MCU) -b $(BAUDRATE) -P net:$(IP_ADRESS)
 
 # Directories
 SRC_DIR = src
@@ -46,7 +48,7 @@ $(BUILD_DIR):
 
 # Upload to microcontroller
 flash: $(TARGET_HEX)
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:$(TARGET_HEX):i
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:$(TARGET_HEX):i -D
 
 # Clean build files
 clean:
