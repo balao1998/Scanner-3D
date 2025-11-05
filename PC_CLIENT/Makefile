@@ -1,22 +1,22 @@
 CC = gcc
-TARGET = program
+TARGET = build/program
 CFLAGS = -Wall -Wextra -std=c99
-LDFLAGS =
 
-SRCS = main.c socket_client.c
-OBJS = $(SRCS:.c=.o)
+SRCDIR = src
+BUILDDIR = build
+
+SRCS = $(wildcard $(SRCDIR)/*.c)
+OBJS = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(SRCS))
 
 $(TARGET): $(OBJS)
-	@echo "Ligando objetos para criar o executável '$(TARGET)'..."
 	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
-	@echo "Compilação concluída!"
 
-%.o: %.c
-	@echo "Compilando $<..."
+# Compile .c -> .o into build/
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
-	@echo "Limpeza concluída."
+	rm -rf $(BUILDDIR)
 
 .PHONY: all clean
