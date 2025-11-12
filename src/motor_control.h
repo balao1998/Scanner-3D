@@ -16,9 +16,13 @@
 #define TOWER_MOTOR_STEP_PIN PB3
 #define TOWER_MOTOR_DIR_PIN PB4
 
-#define STEP_DELAY_US 2
+#define TOWER_HOME_PIN PC5
+#define TOWER_HOME_PORT PINC
+
+#define STEP_DELAY_US 1000
 
 void motors_init();
 void motor_step(uint8_t motor);
 void motor_steps(uint8_t motor, uint16_t n_steps);
 void motor_change_direction(uint8_t motor, uint8_t direction);
+void motor_home();

@@ -10,7 +10,7 @@ AVRDUDE = avrdude
 # Programmer (change as needed)
 PROGRAMMER = arduino
 BAUDRATE = 57600
-IP_ADRESS = 10.225.134.252:23
+IP_ADRESS = 10.61.251.252:23
 AVRDUDE_FLAGS = -c $(PROGRAMMER) -p $(MCU) -b $(BAUDRATE) -P net:$(IP_ADRESS)
 
 # Directories
