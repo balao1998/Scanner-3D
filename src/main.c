@@ -1,16 +1,16 @@
 
-#include "Point3f.h"
-#include "uart.h"
 #define F_CPU 16000000UL // Clock de 16 MHz
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
 
 #include "adc.h"
+#include "machine_controller.h"
 #include "macros.h"
 #include "motor_control.h"
+#include "uart.h"
 
-enum StateMachine { STAND_BY, PRODUCTION, RESETING };
+enum StateMachine { STAND_BY, RUNNING, RESETING };
 
 void init_timer_1ms(void);
 
@@ -36,30 +36,50 @@ int main(void) {
 
 void init() {
   init_timer_1ms();
-  // adc_init();
+  adc_init();
   // pwm_init();
   motors_init();
-  // uart_init();
+  uart_init();
   sei();
 }
 
+void check_state() {
+  if (uart_available()) {
+    const uint8_t incoming_char = uart_read();
+
+    switch (incoming_char) {
+    case 'P':
+    case 'p':
+      m_state = STAND_BY;
+      uart_send_string("STANDING_BY");
+      break;
+    case 'S':
+    case 's':
+    case 'H':
+    case 'h':
+      m_state = RESETING;
+      uart_send_string("RESETTING");
+      break;
+    }
+  }
+}
+
 void loop() {
-  motor_change_direction(BASE_MOTOR, UP);
+
   while (1) {
-    // if (counter_10ms >= 1) {
-    //   counter_10ms = 0;
-    // counter_1Hz++;
-    // uint8_t value = adc_read();
-    // OCR1A = value;
-    // Point3f point = {69, 42.5f, 123.3f};
-    // uart_send_point(&point);
-
-    // TOGGLE_BIT(PORTB, PB0);
-
-    motor_home();
-    // motor_step(BASE_MOTOR);
-    // _delay_us(STEP_DELAY_US);
-    // }
+    check_state();
+    switch (m_state) {
+    case STAND_BY:
+      break;
+    case RUNNING:
+      machine_run();
+      break;
+    case RESETING:
+      if (machine_reset()) {
+        m_state = RUNNING;
+      }
+      break;
+    }
   }
 }
 

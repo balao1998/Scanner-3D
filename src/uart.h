@@ -11,3 +11,5 @@ void uart_init();
 void uart_send_byte(uint8_t data);
 void uart_send_point(const Point3f *point);
 void uart_send_string(const char *message);
+uint8_t uart_available();
+uint8_t uart_read();

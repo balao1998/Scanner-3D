@@ -19,11 +19,13 @@ void motor_step(uint8_t motor) {
     SET_BIT(MOTORS_PORT, BASE_MOTOR_STEP_PIN);
     _delay_us(STEP_DELAY_US);
     CLEAR_BIT(MOTORS_PORT, BASE_MOTOR_STEP_PIN);
+    _delay_us(STEP_DELAY_US);
     break;
   case TOWER_MOTOR:
     SET_BIT(MOTORS_PORT, TOWER_MOTOR_STEP_PIN);
     _delay_us(STEP_DELAY_US);
     CLEAR_BIT(MOTORS_PORT, TOWER_MOTOR_STEP_PIN);
+    _delay_us(STEP_DELAY_US);
     break;
   }
 }
@@ -31,7 +33,6 @@ void motor_step(uint8_t motor) {
 void motor_steps(uint8_t motor, uint16_t n_steps) {
   for (uint16_t i = 0; i < n_steps; ++i) {
     motor_step(motor);
-    _delay_us(STEP_DELAY_US);
   }
 }
 
@@ -52,11 +53,14 @@ void motor_change_direction(uint8_t motor, uint8_t direction) {
   }
 }
 
-void motor_home() {
+uint8_t motor_home() {
   motor_change_direction(TOWER_MOTOR, DOWN);
 
-  while (READ_BIT(TOWER_HOME_PORT, TOWER_HOME_PIN)) {
+  if (READ_BIT(TOWER_HOME_PORT, TOWER_HOME_PIN)) {
     motor_step(TOWER_MOTOR);
-    _delay_us(STEP_DELAY_US);
+    return 0; // MOTOR DIDNT REACH BASE YET
   }
+
+  motor_change_direction(TOWER_MOTOR, UP);
+  return 1; // SUCESSFULL BASE
 }

@@ -34,3 +34,11 @@ void uart_send_string(const char *message) {
     uart_send_byte(*message++);
   }
 }
+
+uint8_t uart_available(void) {
+  return (UCSR0A & (1 << RXC0)); // 1 if a char is available
+}
+
+uint8_t uart_read(void) {
+  return UDR0; // Read the received byte
+}

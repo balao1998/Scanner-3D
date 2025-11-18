@@ -19,10 +19,10 @@
 #define TOWER_HOME_PIN PC5
 #define TOWER_HOME_PORT PINC
 
-#define STEP_DELAY_US 1000
+#define STEP_DELAY_US 600
 
 void motors_init();
 void motor_step(uint8_t motor);
 void motor_steps(uint8_t motor, uint16_t n_steps);
 void motor_change_direction(uint8_t motor, uint8_t direction);
-void motor_home();
+uint8_t motor_home();
