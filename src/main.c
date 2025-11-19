@@ -10,7 +10,7 @@
 #include "motor_control.h"
 #include "uart.h"
 
-enum StateMachine { STAND_BY, RUNNING, RESETING };
+enum StateMachine { STAND_BY, RUNNING, RESETING, RESET_TO_RUN };
 
 void init_timer_1ms(void);
 
@@ -55,10 +55,13 @@ void check_state() {
       break;
     case 'S':
     case 's':
+      m_state = RESET_TO_RUN;
+      uart_send_string("RESETTING TO RUN\n");
+      break;
     case 'H':
     case 'h':
       m_state = RESETING;
-      uart_send_string("RESETTING");
+      uart_send_string("RESETTING\n");
       break;
     }
   }
@@ -72,9 +75,16 @@ void loop() {
     case STAND_BY:
       break;
     case RUNNING:
-      machine_run();
+      if (machine_run()) {
+        m_state = STAND_BY;
+      }
       break;
     case RESETING:
+      if (machine_reset()) {
+        m_state = STAND_BY;
+      }
+      break;
+    case RESET_TO_RUN:
       if (machine_reset()) {
         m_state = RUNNING;
       }
