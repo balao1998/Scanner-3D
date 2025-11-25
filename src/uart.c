@@ -22,7 +22,7 @@ void uart_send_byte(uint8_t data) {
 
 void uart_send_point(const Point3f *point) {
   char buffer[64];
-  snprintf(buffer, sizeof(buffer), "%.2f,%.2f,%.2f\r\n", point->x, point->y,
+  snprintf(buffer, sizeof(buffer), "%.2f %.2f %.2f\r\n", point->x, point->y,
            point->z);
 
   uart_send_string(buffer);

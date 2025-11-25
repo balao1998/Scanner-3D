@@ -31,10 +31,18 @@ uint8_t machine_run() {
 
 void machine_calibration() {
   motor_steps(TOWER_MOTOR, CALIBRATION_STEP);
-  uint16_t first_adc_value = adc_read();
+  int first_adc_value = adc_read();
+
   motor_steps(TOWER_MOTOR, CALIBRATION_STEP);
-  uint16_t second_adc_value = adc_read();
+  int second_adc_value = adc_read();
+
+  // y= 55 x=adc_value  float m = (55-40)/(x2 - x1) // constante = 55 - m*x2;
+  m_line_slope = (55.0 - 40.0) / (second_adc_value - first_adc_value);
+
+  m_line_constant = 55 - (m_line_slope * second_adc_value);
 }
+
+uint8_t machine_calibrated() { return m_line_slope != 0.0f; }
 
 void machine_motors_steps() {
   motor_steps(BASE_MOTOR, BASE_STEPS_PER_RUN);
@@ -61,14 +69,14 @@ uint8_t machine_reset() {
 }
 
 void get_point() {
-  uint16_t value = adc_read();
+  int value = adc_read();
   if (value <= CENTER_DISTANCE) {
     uart_send_string("Invalid value\n");
     return;
   }
 
-  uint16_t object_radius = value - CENTER_DISTANCE;
-  float object_radius_mm = get_mm_point(object_radius);
+  float distance_mm = get_mm_point(value);
+  float object_radius_mm = CENTER_DISTANCE - distance_mm;
 
   float x = object_radius_mm * sen_angle_values[m_trig_index];
   float y = object_radius_mm * cos_angle_values[m_trig_index];
@@ -83,6 +91,6 @@ void send_points() {
   }
 }
 
-float get_mm_point(uint16_t value) {
+float get_mm_point(int value) {
   return (float)value * m_line_slope + m_line_constant;
 }
