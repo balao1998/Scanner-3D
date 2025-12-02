@@ -85,6 +85,7 @@ void loop() {
     check_state();
     switch (m_state) {
     case STAND_BY:
+      // motor_steps(BASE_MOTOR, 200);
       break;
     case RUNNING:
       if (!machine_calibrated()) {

@@ -11,7 +11,7 @@
 #define TOWER_STEPS_PER_RUN 100
 #define CENTER_DISTANCE 80
 
-#define CALIBRATION_STEP 1000
+#define CALIBRATION_STEP 1250
 
 uint8_t machine_run();
 uint8_t machine_reset();
@@ -20,5 +20,5 @@ void machine_calibration();
 void machine_motors_steps();
 float get_mm_point(int value);
 
-void get_point();
+uint8_t get_point();
 void send_points();

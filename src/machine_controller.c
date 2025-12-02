@@ -18,7 +18,11 @@ static float m_line_slope = 0.0f;
 static float m_line_constant = 0.0f;
 
 uint8_t machine_run() {
-  get_point();
+  if (!get_point()) {
+    uart_send_string("f\n");
+    return 1;
+  }
+
   machine_motors_steps();
 
   if (m_points_size >= MAX_POINTS) {
@@ -49,7 +53,7 @@ void machine_motors_steps() {
   m_base_steps += BASE_STEPS_PER_RUN;
   ++m_trig_index;
 
-  if (m_trig_index >= SIZE_OF_TRIG_ARRAY) { // Full turn 360º
+  if (m_trig_index == SIZE_OF_TRIG_ARRAY) { // Full turn 360º
     m_trig_index = 0;
     motor_steps(TOWER_MOTOR, TOWER_STEPS_PER_RUN);
     m_tower_steps += TOWER_STEPS_PER_RUN;
@@ -68,21 +72,23 @@ uint8_t machine_reset() {
   return motor_home();
 }
 
-void get_point() {
+uint8_t get_point() {
   int value = adc_read();
-  if (value <= CENTER_DISTANCE) {
-    uart_send_string("Invalid value\n");
-    return;
-  }
 
   float distance_mm = get_mm_point(value);
   float object_radius_mm = CENTER_DISTANCE - distance_mm;
+
+  if (object_radius_mm <= 0) {
+    return 0;
+  }
 
   float x = object_radius_mm * sen_angle_values[m_trig_index];
   float y = object_radius_mm * cos_angle_values[m_trig_index];
   float z = m_tower_turns * MM_PER_TOWER_RUN;
 
   m_points[m_points_size++] = (Point3f){.x = x, .y = y, .z = z};
+
+  return 1;
 }
 
 void send_points() {
