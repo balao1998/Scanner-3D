@@ -21,7 +21,7 @@ enum StateMachine {
 
 void init_timer_1ms(void);
 
-void pwm_init(void); // FAST PWM A 976.56Hz
+void pwm_init(void);
 void init();
 
 // Function for main loop
@@ -44,7 +44,7 @@ int main(void) {
 void init() {
   init_timer_1ms();
   adc_init();
-  // pwm_init();
+  pwm_init();
   motors_init();
   uart_init();
   sei();
@@ -104,9 +104,11 @@ void loop() {
     case RESET_TO_RUN:
       if (machine_reset()) {
         m_state = RUNNING;
+        machine_go_to_start();
       }
       break;
     case CALIBRATING:
+      machine_go_to_start();
       machine_calibration();
       m_state = STAND_BY;
       break;
@@ -127,10 +129,8 @@ void init_timer_1ms() {
 }
 
 void pwm_init(void) {
-  // DDRB |= (1 << PB1); // PB1 como saída
-  //
-  // TCCR1A = 0b10000001; // COM1A1 A 1 OC1A ON COMPARE MATCH NÃO INVERTIDO
-  // WGM10 A
-  //                      // 1 PARA FAST PWM 8 BITS
-  // TCCR1B = 0b00001011; // WGM12 A 1 PARA FAST PWM 8 BITS PRESCALLER 64
+  DDRB |= (1 << PB1);     // PB1 como saída
+  OCR1A = 31249;          // Define meio ciclo (0.5s com prescaler 256)
+  TCCR1A = (1 << COM1A0); // Configura para INVERTER (Toggle) o pino PB1
+  TCCR1B = (1 << WGM12) | (1 << CS12); // Modo CTC + Prescaler 256
 }

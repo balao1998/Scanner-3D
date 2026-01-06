@@ -10,7 +10,7 @@ char FILENAME[256] = "dados.txt";
 //                             FUNÇÕES DE SOCKET
 // =========================================================================
 
-int setup_socket_connection() {
+int setup_socket_connection(const char *ip_address) {
     struct sockaddr_in server_addr;
 
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -22,20 +22,20 @@ int setup_socket_connection() {
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(SERVER_PORT);
 
-    if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, ip_address, &server_addr.sin_addr) <= 0) {
         perror("Endereço IP inválido/não suportado");
         close(sock_fd);
         return -1;
     }
 
-    printf("A tentar conectar a %s:%d...\n", SERVER_IP, SERVER_PORT);
+    printf("A tentar conectar a %s:%d...\n", ip_address, SERVER_PORT);
     if (connect(sock_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Falha na conexão");
         close(sock_fd);
         return -1;
     }
 
-    printf("Conexão estabelecida com sucesso! (%s)\n", SERVER_IP);
+    printf("Conexão estabelecida com sucesso! (%s)\n", ip_address);
     return 0;
 }
 
@@ -74,7 +74,7 @@ void check_and_handle_reception() {
     FD_SET(sock_fd, &read_fds);
 
     tv.tv_sec = 0;
-    tv.tv_usec = 10000; // 10 ms
+    tv.tv_usec = 1000; // 1 ms (reduzido para ser mais rápido na resposta)
 
     if (select(sock_fd + 1, &read_fds, NULL, NULL, &tv) <= 0) {
         return; // Sem dados
@@ -85,15 +85,19 @@ void check_and_handle_reception() {
 
     if (bytes_received > 0) {
         char *end_pos = (char *)memchr(buffer, END_MARKER, bytes_received);
-        size_t data_size = (end_pos != NULL) ? (size_t)(end_pos - buffer) : bytes_received;
+       size_t data_size = (end_pos != NULL) ? (size_t)(end_pos - buffer) : (size_t)bytes_received;
 
-        printf("<- RECEBIDO: ");
-        fwrite(buffer, 1, data_size, stdout);
-        fflush(stdout);
+        // --- ALTERAÇÃO 1: REMOVIDO O PRINT PARA O ECRÃ ---
+        // printf("<- RECEBIDO: "); 
+        // fwrite(buffer, 1, data_size, stdout);
+        // fflush(stdout);
+        // -------------------------------------------------
 
         if (data_file != NULL) {
             fwrite(buffer, 1, data_size, data_file);
             fflush(data_file);
+            // Opcional: Imprimir um ponto para mostrar que está vivo sem sujar
+            // printf("."); fflush(stdout); 
         }
 
         if (end_pos != NULL) {

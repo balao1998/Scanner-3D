@@ -2,22 +2,18 @@
 #ifndef SOCKET_CLIENT_H
 #define SOCKET_CLIENT_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <errno.h>
-#include <ctype.h>
+#include <stdio.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 // --- CONFIGURAÇÃO DA COMUNICAÇÃO ---
 #define SERVER_IP "10.225.134.252"
 #define SERVER_PORT 23
 #define BUFFER_SIZE 1024
-#define END_MARKER 'e'
+#define END_MARKER 'f'
 
 // --- VARIÁVEIS GLOBAIS ---
 extern int sock_fd;

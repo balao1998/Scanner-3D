@@ -33,6 +33,12 @@ uint8_t machine_run() {
   return m_tower_steps >= MAX_TOWER_STEPS;
 }
 
+void machine_go_to_start(){
+  motor_change_direction(TOWER_MOTOR, UP);
+  motor_steps(TOWER_MOTOR, START_STEPS_TOWER );
+  m_tower_steps += START_STEPS_TOWER;
+}
+
 void machine_calibration() {
   motor_steps(TOWER_MOTOR, CALIBRATION_STEP);
   int first_adc_value = adc_read();
