@@ -8,18 +8,15 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-// --- CONFIGURAÇÃO DA COMUNICAÇÃO ---
 #define SERVER_IP "10.225.134.252"
 #define SERVER_PORT 23
 #define BUFFER_SIZE 1024
 #define END_MARKER 'f'
 
-// --- VARIÁVEIS GLOBAIS ---
 extern int sock_fd;
 extern FILE *data_file;
 extern char FILENAME[256];
 
-// --- PROTÓTIPOS ---
 int setup_socket_connection(const char *ip);
 int send_command(const char *cmd);
 void check_and_handle_reception();

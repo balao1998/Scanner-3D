@@ -71,10 +71,10 @@ void check_and_handle_reception() {
   FD_SET(sock_fd, &read_fds);
 
   tv.tv_sec = 0;
-  tv.tv_usec = 1000; // 1 ms (reduzido para ser mais rápido na resposta)
+  tv.tv_usec = 1000;
 
   if (select(sock_fd + 1, &read_fds, NULL, NULL, &tv) <= 0) {
-    return; // Sem dados
+    return; // No Data
   }
 
   char buffer[BUFFER_SIZE];
