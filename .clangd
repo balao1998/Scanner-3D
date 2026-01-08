@@ -1,2 +1,14 @@
+# Configuração para o Código do PC (Linux)
+If:
+  PathMatch: PC_CLIENT/.*
+CompileFlags:
+  Add: [-xc, -std=c11, -Wall]
+  Remove: [-target, avr, -mmcu=atmega328p, -DF_CPU=16000000UL]
+
+---
+
+# Configuração para o Código do Microcontrolador (AVR)
+If:
+  PathMatch: src/.*
 CompileFlags:
   Add: [-target, avr, -mmcu=atmega328p, -DF_CPU=16000000UL]

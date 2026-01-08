@@ -1,29 +1,19 @@
 #include "socket_client.h"
 #include <stdio.h>
 #include <string.h>
-#include <sys/select.h> // Para monitorizar teclado e socket
-#include <unistd.h>     // Para sleep() e read()
+#include <sys/select.h>
+#include <unistd.h>
 
-// ==========================================
-// FUNÇÕES AUXILIARES DE INTERFACE
-// ==========================================
-
-// Limpa o terminal usando códigos ANSI (rápido e sem flicker)
 void clear_screen() { printf("\033[H\033[J"); }
 
-// Limpa o buffer do teclado (consome 'enters' que sobram)
 void flush_input() {
   int c;
   while ((c = getchar()) != '\n' && c != EOF) {
   }
 }
 
-// ==========================================
-// LÓGICA DE CAPTURA DE DADOS
-// ==========================================
-
-void loop_de_captura() {
-  clear_screen(); // Limpa tudo ao entrar no modo de gravação
+void capture_loop() {
+  clear_screen();
   printf("\n==========================================\n");
   printf("   A GRAVAR DADOS NO FICHEIRO: %s\n", FILENAME);
   printf("==========================================\n");
@@ -33,21 +23,18 @@ void loop_de_captura() {
   while (data_file != NULL) {
     fd_set fds;
     FD_ZERO(&fds);
-    FD_SET(sock_fd, &fds);      // Monitorizar Socket
-    FD_SET(STDIN_FILENO, &fds); // Monitorizar Teclado
+    FD_SET(sock_fd, &fds);      // Monitor socket
+    FD_SET(STDIN_FILENO, &fds); // Monitor Keyboard
 
     struct timeval tv = {0, 100000}; // Timeout 100ms
     int max_fd = (sock_fd > STDIN_FILENO) ? sock_fd : STDIN_FILENO;
 
-    // Espera atividade
     select(max_fd + 1, &fds, NULL, NULL, &tv);
 
-    // 1. DADOS NO SOCKET (PRIORIDADE)
     if (FD_ISSET(sock_fd, &fds)) {
-      check_and_handle_reception(); // Lê e grava no ficheiro
+      check_and_handle_reception();
     }
 
-    // 2. INPUT DO UTILIZADOR (PARAR)
     if (data_file != NULL && FD_ISSET(STDIN_FILENO, &fds)) {
       char c;
       if (read(STDIN_FILENO, &c, 1) > 0) {
@@ -55,23 +42,17 @@ void loop_de_captura() {
           printf("\n>> Comando de paragem recebido.\n");
           send_command("P");
           close_data_file();
-
-          // Limpar resto da linha se houver
-          char trash;
-          // flag O_NONBLOCK seria ideal, mas aqui um loop simples ajuda
-          // Se o user carregou 'p' + 'enter', o enter será consumido no menu a
-          // seguir
         }
       }
     }
   }
 
   printf("\n--- Fim da captura. A regressar ao menu... ---\n");
-  sleep(1); // Pausa breve para ver que acabou
+  sleep(1); // Brief pause to see the log
 }
 
 // ==========================================
-// MENU PRINCIPAL
+// Main Menu
 // ==========================================
 
 char menu() {
@@ -86,17 +67,12 @@ char menu() {
   printf("Status: %s\n", (data_file != NULL) ? "GRAVANDO..." : "PRONTO");
   printf("Comando > ");
 
-  // Leitura segura
   if (scanf(" %c", &c) != 1)
     return 'X';
 
-  flush_input(); // Limpa o buffer
+  flush_input(); // Clear input buffer
   return c;
 }
-
-// ==========================================
-// MAIN
-// ==========================================
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -105,44 +81,39 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  char *ip = argv[1];
+  const char *ip = argv[1];
   clear_screen();
   printf("A ligar a %s ...\n", ip);
 
   if (setup_socket_connection(ip) != 0)
     return 1;
 
-  // LOOP PRINCIPAL DO PROGRAMA
   while (1) {
-    // Se o ficheiro estiver aberto, entra direto no modo de captura
+    // file opened enter capture loop
     if (data_file != NULL) {
-      loop_de_captura();
+      capture_loop();
       continue;
     }
 
-    // Processa mensagens de fundo (ex: ack do servidor)
     check_and_handle_reception();
 
-    // 1. Limpa e mostra o Menu
     clear_screen();
     char comando = menu();
 
-    printf("\n"); // Espaço visual
+    printf("\n");
 
-    // 2. Executa comando
     switch (comando) {
     case 's':
     case 'S':
       if (data_file == NULL) {
         printf("Nome do ficheiro (.xyz): ");
         if (scanf(" %255s", FILENAME) == 1) {
-          flush_input(); // Limpa enter
+          flush_input();
 
           data_file = fopen(FILENAME, "a");
           if (data_file != NULL) {
             printf(">> Ficheiro aberto. Enviando START...\n");
             send_command("S");
-            // O loop reinicia e entra no 'if (data_file != NULL)'
           } else {
             perror(">> ERRO ao criar ficheiro");
             sleep(2);
@@ -156,7 +127,6 @@ int main(int argc, char *argv[]) {
 
     case 'p':
     case 'P':
-      // Stop manual fora do loop de captura (segurança)
       printf(">> Enviando PARAR...\n");
       send_command("P");
       close_data_file();
@@ -167,14 +137,14 @@ int main(int argc, char *argv[]) {
     case 'C':
       printf(">> Enviando CALIBRAR...\n");
       send_command("C");
-      sleep(1); // Pausa para ler feedback
+      sleep(1);
       break;
 
     case 'h':
     case 'H':
       printf(">> Enviando HOME...\n");
       send_command("H");
-      sleep(1); // Pausa para ler feedback
+      sleep(1);
       break;
 
     case 'q':
@@ -187,7 +157,7 @@ int main(int argc, char *argv[]) {
 
     default:
       printf(">> Comando inválido.\n");
-      sleep(1); // Pausa para ver o erro
+      sleep(1);
       break;
     }
   }

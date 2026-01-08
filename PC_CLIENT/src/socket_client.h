@@ -1,4 +1,3 @@
-// socket_client.h
 #ifndef SOCKET_CLIENT_H
 #define SOCKET_CLIENT_H
 
@@ -21,7 +20,7 @@ extern FILE *data_file;
 extern char FILENAME[256];
 
 // --- PROTÓTIPOS ---
-int setup_socket_connection();
+int setup_socket_connection(const char *ip);
 int send_command(const char *cmd);
 void check_and_handle_reception();
 void close_data_file();
